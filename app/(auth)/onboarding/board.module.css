@@ -1,0 +1,30 @@
+.all{
+    background-color: black;
+    height: 110vh;
+    /* height: 97vh; */
+    color: white;
+    position: fixed;
+    width: 100vw;
+    /* overflow: scroll; */
+}
+.tit{
+    position: relative;
+    margin-top: 2%;
+margin-left: 10%;
+font-size: 30px;
+font-weight: 600;
+}
+.titfont{
+     position: relative;
+    margin-top: 10px;
+margin-left: 10%;
+font-size: 12px;
+}
+.bor{
+     background-color: rgba(19,20,23);
+           padding:1rem;
+           width: 60%;
+           /* height: ; */
+           margin-left: 10%;
+            margin-top: 2%;
+}

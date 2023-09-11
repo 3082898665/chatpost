@@ -1,0 +1,16 @@
+
+.all{
+    background-color: black;
+    color: white;
+    /* height: 101%; */
+    width: 65vw;
+    overflow-y: scroll;
+    height: 92vh;
+}
+.all::-webkit-scrollbar{
+    display: none;
+}
+.contain{
+    display: flex;
+    /* height: 103vh!important */
+}
