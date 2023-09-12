@@ -36,6 +36,7 @@ export default function PostThread({ userId }:Props){
         }
     })
     const onSubmit = async (value:z.infer<typeof Threadvalidation>) => {
+        console.log(organization)
    await createThread({
     text:value.thread,
     author:userId,

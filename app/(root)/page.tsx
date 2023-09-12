@@ -5,9 +5,12 @@ import ThreadCard from '@/components/cards/ThreadCard';
 import Testpp from '@/components/cards/Testpp';
 import { redirect } from 'next/navigation';
 export default async function Home() {
+
   const results = await fetchposts(1, 30);
-  const user = await currentUser();
-  if (!user) return null;
+  let user = await currentUser();
+  if (!user){
+    return <p>未登录</p>;
+  }
 
 
 
@@ -27,7 +30,7 @@ export default async function Home() {
               <ThreadCard
                 key={post._id}
                 id={post._id}
-                currentUserId={user.id|| ""}
+                currentUserId={user.id||organization.id|| ""}
                 parentId={post.parentId}
                 content={post.text}
                 author={post.author}
