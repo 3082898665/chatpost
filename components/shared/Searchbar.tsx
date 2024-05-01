@@ -13,7 +13,7 @@ interface Props {
 function Searchbar({ routeType }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState("");
-
+  console.log(routeType)
   // query after 0.3s of no input
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -28,7 +28,7 @@ function Searchbar({ routeType }: Props) {
   }, [search, routeType]);
 
   return (
-    <div className='searchbar' style={{width:'95%',marginLeft:'2.5%'}}>
+    <div className='searchbar' style={{ width: '95%', marginLeft: '2.5%' }}>
       <Image
         src='/assets/search-gray.svg'
         alt='search'

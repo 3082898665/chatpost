@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @layer components {
+
   /* main */
   .main-container {
     @apply flex min-h-screen flex-1 flex-col items-center bg-dark-1 px-6 pb-10 pt-28 max-md:pb-32 sm:px-10;
@@ -121,9 +122,7 @@
   @apply max-sm:hidden;
 }
 
-.cl-organizationSwitcherTrigger
-  .cl-organizationPreview
-  .cl-organizationPreviewTextContainer {
+.cl-organizationSwitcherTrigger .cl-organizationPreview .cl-organizationPreviewTextContainer {
   @apply max-sm:hidden;
 }
 
@@ -161,18 +160,55 @@
 .comment-form_btn {
   @apply rounded-3xl bg-primary-500 px-8 py-2 !text-small-regular text-light-1 max-xs:w-full !important;
 }
-  body {
-    color: rgb(var(--foreground-rgb));
-    background: linear-gradient(
-        to bottom,
-        transparent,
-        rgb(var(--background-end-rgb))
-      )
-      rgb(var(--background-start-rgb));
-  }
-  .page_all__Gvx_5 {
-    background-color: black;
-    color: white;
-    width: 65vw;
-    height: 91vh;
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+}
+
+.page_all__Gvx_5 {
+  background-color: black;
+  color: white;
+  width: 65vw;
+  height: 92vh;
+  padding-bottom: 10px;
+}
+
+:where(.css-dev-only-do-not-override-16ak7ny).ant-menu-dark.ant-menu-inline .ant-menu-item {
+  padding-left: 30px;
+  font-size: 17px;
+  width: 90%;
+  border-radius: 10px;
+  height: 45px;
+  margin-left: 5%;
+}
+
+:where(.css-dev-only-do-not-override-16ak7ny).ant-btn.ant-btn-sm {
+  margin-inline-start: 8px;
+
+  border: 1px rgb(132, 132, 132);
+}
+.ant-tag{
+  color:white;
+  background-color: rgb(16,16,18);
+  border: 1px solid rgb(31,31,34);
+}
+.anticon  svg{
+  color: white;
+}
+.ant-input{
+  background-color: rgb(16,16,18);
+  border: 1px solid rgb(31,31,34);
+  outline:rgb(31,31,34) ;
+  color: white;
+}
+.ant-input:hover{
+  border: 1px solid rgb(31,31,34);
+  outline:rgb(31,31,34) ;
+}
+.ant-input:focus{
+  border: 1px solid rgb(31,31,34);
+  outline:rgb(31,31,34) ;
 }

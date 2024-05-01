@@ -18,7 +18,6 @@ path:string
 ):Promise<void>{
 connectToDB();
 try {
-    debugger;
     await User.findOneAndUpdate(
         {id:userId},
         {
@@ -67,7 +66,7 @@ export async function fetchUserPosts(userId:string){
                 populate: {
                   path: "author",
                   model: User,
-                  select: "name image id", // Select the "name" and "_id" fields from the "User" model
+                  select: "name image _id", // Select the "name" and "_id" fields from the "User" model
                 },
               }],
         })
@@ -77,6 +76,62 @@ export async function fetchUserPosts(userId:string){
         throw new Error(`this is an error ${error.message}`)
     }
 }
+export async function fetchlovePost(userId:string){
+try {
+    connectToDB();
+    const threads=User.findOne({id:userId}).populate({
+        path:'love',
+        model:Thread,
+        populate:[
+             {
+                path: "author",
+                model: User,
+                select: "name image _id", // Select the "name" and "_id" fields from the "User" model
+              },
+              {
+             path: "children",
+             model: Thread,
+             populate: {
+               path: "author",
+               model: User,
+               select: "name image _id", // Select the "name" and "_id" fields from the "User" model
+             },
+           }
+        ]
+    })
+    return threads;
+} catch (error:any) {
+    throw new Error(`this is an error ${error}`) 
+}
+}
+export async function fetchcollectPost(userId:string){
+    try {
+        connectToDB();
+        const threads=User.findOne({id:userId}).populate({
+            path:'collect',
+            model:Thread,
+            populate:[
+                 {
+                    path: "author",
+                    model: User,
+                    select: "name image _id", // Select the "name" and "_id" fields from the "User" model
+                  },
+                  {
+                 path: "children",
+                 model: Thread,
+                 populate: {
+                   path: "author",
+                   model: User,
+                   select: "name image _id", // Select the "name" and "_id" fields from the "User" model
+                 },
+               }
+            ]
+        })
+        return threads;
+    } catch (error:any) {
+        throw new Error(`this is an error ${error}`) 
+    }
+    }
 export async function fetchUsers({
     userId,
     searchString="",
@@ -144,5 +199,86 @@ export async function getAacivity(userId:string){
           return replies;
     } catch (error:any) {
         throw new Error(`this is an error ${error.message}`)
+    }
+}
+export async function savelikethread(userId:string,threadId:string,authorId:string){
+try {
+    connectToDB();
+    const auth=await fetchuser(authorId);
+
+    await User.findOneAndUpdate({id: userId}, {
+        $push: {love: threadId}, // 向love数组中添加帖子id
+
+      });
+      if(!auth.getlove){
+      await  User.findOneAndUpdate({id: authorId}, {$set: {getlove: 1}});
+      }else{
+        await User.findOneAndUpdate({id: authorId}, {
+            $inc:{getlove:1}
+    
+          });
+      }
+     
+} catch (error:any) {
+    throw new Error('Fail')
+}
+}
+export async function delectlikethread(userId:string,threadId:string,authorId:string){
+    try {
+        connectToDB();
+       await User.findOneAndUpdate({id: userId}, {
+        $pull: {love: threadId}, // 向love数组中添加帖子id
+      });
+      await User.findOneAndUpdate({id: authorId}, {
+        $inc:{getlove:-1}
+
+      });
+    } catch (error:any) {
+        throw new Error('Fail')
+    }
+    }
+export async function addsubscribe(currentId:string,authorId:string){
+try {
+     connectToDB();
+     const userInfo=await User.findOne({id:currentId});
+     const authInfo=await User.findOne({id:authorId});
+     await authInfo.funs.push(currentId)
+     await userInfo.interes.push(authorId);
+     userInfo.save();
+     authInfo.save();
+
+} catch (error:any) {
+    throw new Error('Fail')
+}
+}
+export async function delectsubscribe(userId:string,authorId:string){
+    try {
+        connectToDB();
+       const userInfo=await fetchuser(userId);
+       const authInfo=await fetchuser(authorId);
+       await userInfo.updateOne({ $pull: { interes: authorId } });
+       await authInfo.updateOne({ $pull: { funs: userId } });
+    } catch (error:any) {
+        throw new Error('Fail')
+    }
+    }
+export async function collectPosts(userId:string,threadId:string){
+    try {
+        connectToDB();
+        await User.findOneAndUpdate({id: userId}, {
+            $push: {collect: threadId}, // 向love数组中添加帖子id
+          });
+    } catch (error:any) {
+        throw new Error('this is an error')
+    }
+}
+export async function delectcollectPosts(userId:string,threadId:string){
+    try {
+        connectToDB();
+        await User.findOneAndUpdate({id: userId}, {
+            $pull: {collect: threadId}, // 向love数组中添加帖子id
+          });
+    } catch (error:any) {
+        throw new Error('this is an error')
     }
 }

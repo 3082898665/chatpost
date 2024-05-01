@@ -1,0 +1,12 @@
+.tags {
+    background-color: rgb(34 34 50);
+    margin-right: 1rem;
+    padding: 5px;
+    /* margin-top: 2px; */
+    color: white;
+    border-radius: 10px;
+    position: relative;
+    margin-top: 5px;
+    top: 5px;
+    font-size: 12px;
+}

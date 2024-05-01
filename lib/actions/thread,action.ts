@@ -5,15 +5,16 @@ import User from "../models/user.model";
 import Community from "../models/community.model";
 import { connectToDB } from "../mongoose";
 interface Params {
-    text: string,
-    author: string,
-    communityId: string | null,
-    path: string
+  text: string,
+  author: string,
+  communityId: string | null,
+  path: string,
+  title: string,
+  tag: string[] | null
 }
-export async function createThread({ text, author, communityId, path }: Params) {
+export async function createThread({ text, author, communityId, path, title, tag }: Params) {
   try {
     connectToDB();
-    console.log(communityId)
     const communityIdObject = await Community.findOne(
       { id: communityId },
       { _id: 1 }
@@ -22,7 +23,9 @@ export async function createThread({ text, author, communityId, path }: Params) 
     const createdThread = await Thread.create({
       text,
       author,
-      community: communityId, // Assign communityId if provided, or leave it null for personal account
+      community: communityIdObject, // Assign communityId if provided, or leave it null for personal account
+      title,
+      tag
     });
 
     // Update User model
@@ -37,22 +40,23 @@ export async function createThread({ text, author, communityId, path }: Params) 
       });
     }
     revalidatePath(path)
-  } catch (error:any) {
+  } catch (error: any) {
     throw new Error(`this is an error ${error.message}`)
   }
-    
+
 }
-export const fetchposts = async (pageNumber = 1, pageSize = 20) => {
-    connectToDB();
-    const skipAmount = (pageNumber - 1) * pageSize;
-    const pageQuery = Thread.find({ parentId: { $in: [null, undefined] } })
+export const fetchposts = async (pageNumber: number) => {
+  const pageSize = 15;
+  connectToDB();
+  const skipAmount = (pageNumber - 1) * pageSize;
+  const pageQuery = Thread.find({ parentId: { $in: [null, undefined] } })
     .sort({ createdAt: "desc" })
     .skip(skipAmount)
     .limit(pageSize)
     .populate({
       path: "author",
       model: User,
-    }) .populate({
+    }).populate({
       path: "community",
       model: Community,
     })
@@ -64,76 +68,75 @@ export const fetchposts = async (pageNumber = 1, pageSize = 20) => {
         select: "_id name parentId image", // Select only _id and username fields of the author
       },
     });
-    const totalPOostCount = await Thread.countDocuments({ parentId: { $in: [null, undefined] } });
-    const postnum = await pageQuery.exec()
-    const isNext = totalPOostCount > postnum.length + skipAmount;
-    return { postnum, isNext }
+  // const totalPOostCount = await Thread.countDocuments({ parentId: { $in: [null, undefined] } });
+  // const postnum = await pageQuery.exec()
+  // const isNext = totalPOostCount > postnum.length + skipAmount;
+  return pageQuery
 
 }
-export const fetchThreadById=async (threadId:string)=>{
-connectToDB();
-try {
-  const thread = await Thread.findById(threadId)
-  .populate({
-    path: "author",
-    model: User,
-    select: "_id id name image",
-  }) // 获取作者的id name image
-  .populate({
-    path: "community",
-    model: Community,
-    select: "_id id name image",
-  }) // Populate the community field with _id and name
-  .populate({
-    path: "children", // 获取子评论的信息
-    populate: [
-      {
-        path: "author", // 获取子评论作者的信息
+export const fetchThreadById = async (threadId: string) => {
+  connectToDB();
+  try {
+    const thread = await Thread.findById(threadId)
+      .populate({
+        path: "author",
         model: User,
-        select: "_id id name parentId image", // 获取 _id and username fields of the author
-      },
-      {
-        path: "children", // 获取 子评论的子评论信息
-        model: Thread, // 嵌套子项的模型（假设它是相同的“线程”模型）
-        populate: {
-          path: "author", //填充嵌套子项中的作者字段
-          model: User,
-          select: "_id id name parentId image", // 仅选择作者的_id和用户名字段
-        },
-      },
-    ],
-  })
-  .exec();
-return thread
-} catch (error:any) {
-  throw new Error(`Error fetching thread:${error.message}`)
-}
+        select: "_id id name image",
+      }) // 获取作者的id name image
+      .populate({
+        path: "community",
+        model: Community,
+        select: "_id id name image",
+      }) // Populate the community field with _id and name
+      .populate({
+        path: "children", // 获取子评论的信息
+        populate: [
+          {
+            path: "author", // 获取子评论作者的信息
+            model: User,
+            select: "_id id name parentId image", // 获取 _id and username fields of the author
+          },
+          {
+            path: "children", // 获取 子评论的子评论信息
+            model: Thread, // 嵌套子项的模型（假设它是相同的“线程”模型）
+            populate: {
+              path: "author", //填充嵌套子项中的作者字段
+              model: User,
+              select: "_id id name parentId image", // 仅选择作者的_id和用户名字段
+            },
+          },
+        ],
+      })
+      .exec();
+    return thread
+  } catch (error: any) {
+    throw new Error(`Error fetching thread:${error.message}`)
+  }
 }
 export async function addCommenToThread(
-  threadId:string,
-  commentText:string,
-  userId:string,
-  path:string,
-){
-connectToDB();
- try {
-   const originalThread= await Thread.findById(threadId);
-   if(!originalThread) throw new Error(`this is an errror`);
-   const commentThread=new Thread({
-    text:commentText,
-    parentId:threadId,
-    author:userId
-   });
-   const saveCommThread=await commentThread.save();
-   //将评论的子评论存储起来
-   await originalThread.children.push(saveCommThread._id);
-   //保存
-   await originalThread.save();
-   revalidatePath(path);
+  threadId: string,
+  commentText: string,
+  userId: string,
+  path: string,
+) {
+  connectToDB();
+  try {
+    const originalThread = await Thread.findById(threadId);
+    if (!originalThread) throw new Error(`this is an errror`);
+    const commentThread = new Thread({
+      text: commentText,
+      parentId: threadId,
+      author: userId
+    });
+    const saveCommThread = await commentThread.save();
+    //将评论的子评论存储起来
+    await originalThread.children.push(saveCommThread._id);
+    //保存
+    await originalThread.save();
 
- } catch (error:any) {
-  throw new Error(`this is an ${error.message}`)
- }
+  } catch (error: any) {
+    throw new Error(`this is an ${error.message}`)
+  }
 }
 export async function fetchAllChildThreads(threadId: string): Promise<any[]> {
   const childThreads = await Thread.find({ parentId: threadId });
@@ -146,8 +149,6 @@ export async function fetchAllChildThreads(threadId: string): Promise<any[]> {
 
   return descendantThreads;
 }
-
-
 export async function deleteThread(id: string, path: string): Promise<void> {
   try {
     connectToDB();
@@ -201,5 +202,20 @@ export async function deleteThread(id: string, path: string): Promise<void> {
     revalidatePath(path);
   } catch (error: any) {
     throw new Error(`Failed to delete thread: ${error.message}`);
+  }
+}
+export async function addpageview(id: string, view: string) {
+  try {
+    connectToDB()
+    const thread = await Thread.findById(id)
+    console.log(view)
+    if (!thread.browserview.includes(view)) {
+      await thread.browserview.push(view)
+      thread.save();
+      console.log('11111')
+    }
+
+  } catch (error: any) {
+    throw new Error(`this is an error ${error}`)
   }
 }
